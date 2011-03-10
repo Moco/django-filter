@@ -1,6 +1,6 @@
 from django import forms
 
-from django_filters.widgets import RangeWidget, LookupTypeWidget
+from django_filters.widgets import RangeWidget, LookupTypeWidget, RealDateRangeWidget
 
 class RangeField(forms.MultiValueField):
     widget = RangeWidget
@@ -16,6 +16,23 @@ class RangeField(forms.MultiValueField):
         if data_list:
             return slice(*data_list)
         return None
+
+
+class RealDateRangeField(forms.MultiValueField):
+    widget = RealDateRangeWidget
+
+    def __init__(self, *args, **kwargs):
+        fields = (
+            forms.DateField(),
+            forms.DateField(),
+        )
+        super(RealDateRangeField, self).__init__(fields, *args, **kwargs)
+
+    def compress(self, data_list):
+        if data_list:
+            return slice(*data_list)
+        return None
+
 
 class LookupTypeField(forms.MultiValueField):
     def __init__(self, field, lookup_choices, *args, **kwargs):

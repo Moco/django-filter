@@ -8,6 +8,9 @@ from django.utils.encoding import force_unicode
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
 
+from django.contrib.admin.widgets import AdminDateWidget
+
+
 class LinkWidget(forms.Widget):
     def __init__(self, attrs=None, choices=()):
         super(LinkWidget, self).__init__(attrs)
@@ -65,6 +68,13 @@ class LinkWidget(forms.Widget):
 
 class RangeWidget(forms.MultiWidget):
     def __init__(self, attrs=None):
+        # TODO: this is a dirty hack, and if we ever need any ranges for
+        # larger values, we'll be in trouble. However, I can't find exactly
+        # where this RangeWidget is init'ed, so it's hard to improve.
+        if attrs:
+            attrs['size'] = '3'
+        else:
+            attrs = {'size': '3'}
         widgets = (forms.TextInput(attrs=attrs), forms.TextInput(attrs=attrs))
         super(RangeWidget, self).__init__(widgets, attrs)
 
@@ -75,6 +85,20 @@ class RangeWidget(forms.MultiWidget):
 
     def format_output(self, rendered_widgets):
         return u'-'.join(rendered_widgets)
+
+class RealDateRangeWidget(forms.MultiWidget):
+    def __init__(self, attrs=None):
+        widgets = (AdminDateWidget(attrs=attrs), AdminDateWidget(attrs=attrs))
+        super(RealDateRangeWidget, self).__init__(widgets, attrs)
+
+    def decompress(self, value):
+        if value:
+            print "VV", value.start, value.stop
+            return [value.start, value.stop]
+        return [None, None]
+
+    def format_output(self, rendered_widgets):
+        return u' to '.join(rendered_widgets)
 
 class LookupTypeWidget(forms.MultiWidget):
     def decompress(self, value):
